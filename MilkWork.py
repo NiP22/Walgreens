@@ -12,7 +12,7 @@ def promo(x):
 
 
 pd.set_option('display.expand_frame_repr', False)
-df = pd.read_csv('SomeMilk.csv', sep='|')
+df = pd.read_csv('Item.csv', sep='|')
 df = df.drop('Unnamed: 0', 1)
 tmp = df[['WEEK', 'ACTUAL']].groupby('WEEK')[['ACTUAL']].sum()
 tmp.columns = ['Revenue']
@@ -29,6 +29,7 @@ df = df.drop('WEEK', 1)
 df = df.drop('SEG', 1)
 df = df.drop('ACTUAL', 1)
 df = df.drop('PROMO', 1)
+df = df.drop('BU', 1)
 df = df.drop_duplicates()
 df = df.sort_values(['Year', "Date"])
 df.to_csv('GoodItem.csv', sep='|')
