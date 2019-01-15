@@ -32,4 +32,7 @@ df = df.drop('PROMO', 1)
 df = df.drop('BU', 1)
 df = df.drop_duplicates()
 df = df.sort_values(['Year', "Date"])
+if df.shape[0] < 15:
+    f = open("seasonal.txt", 'a')
+    f.write(df['PLN_LABEL'].iloc[0] + "|")
 df.to_csv('GoodItem.csv', sep='|')

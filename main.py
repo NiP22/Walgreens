@@ -14,7 +14,9 @@ df = pd.read_csv('data.csv', sep='|')
 #print(df['WEEK'].iloc[df['WEEK'].idxmin()])
 #print(df['WEEK'].idxmin())
 
-df[df['PLN'] == 40000755059].to_csv('Item.csv', sep='|')
+#df[df['PLN'] == 40000914559].to_csv('Item.csv', sep='|')
+df[df['PLN'] == 40000581631].to_csv('Item.csv', sep='|')
+#df[df['WEEK'] == 1161218].sample(11860).to_csv('NewYear.csv', sep='|')
 
 '''
 plotish = df[['OPSTUDY_LABEL', 'ACTUAL']]
