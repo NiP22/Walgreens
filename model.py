@@ -7,21 +7,20 @@ import random
 plt.style.use('ggplot')
 plt.rcParams['figure.figsize'] = (10, 3)
 plt.rcParams['font.family'] = 'sans-serif'
-
+'''
 pd.set_option('display.expand_frame_repr', False)
-df = pd.read_csv('GoodItem.csv', sep='|')
+df = pd.read_csv('Good_item.csv', sep='|')
 df = df.drop("Unnamed: 0", 1)
 raw_data = df[['Revenue', 'Promo', 'Year', 'Date']]
-test = raw_data[raw_data['Year'] == 17]
-raw_data = raw_data[(raw_data['Year'] == 16) | (raw_data['Year'] == 15)]
+test = pd.read_csv('Good_pred_item.csv', sep='|')
+test.drop('Unnamed: 0', 1)
+test.drop('PLN', 1)
 raw_data.to_csv('test.csv', sep='|')
-print(random.random()*((-1)**random.randint(0, 1)))
-
+'''
 
 def fill_promo(data):
     range = np.sqrt(np.array(data[data['Promo'] == 0]).max() - np.array(data[data['Promo'] == 0]).min())
     indexes = data[data['Promo'] == 1].index
-
     for i in indexes:
         i_left = i - 1
         i_right = i + 1
@@ -62,32 +61,32 @@ def promo_coefficient(data, raw_data):
     return tmp/(indexes.shape[0] + 0.0001)/2
 
 
-def predict_52(raw_data, promo):
+def predict_52(raw_data, promo, weeks_to_predict=52):
     data = fill_promo(raw_data.copy())
     y_train = np.array(data['Revenue'])
-    plt.plot(data['Revenue'])
-    plt.show()
-    pred = model(y_train)
+    pred = model(y_train, weeks_to_predict)
     coef = promo_coefficient(data, raw_data)
     for i in range(promo.shape[0]):
         if promo[i]:
             pred[i] += coef
     return pred
 
-
+'''
 pred = predict_52(raw_data, np.array(test['Promo']))
-plt.plot(test['Revenue'])
 x = np.arange(test.index[0], test.index[0] + 53)
+print(pred)
 plt.plot(x, pred)
 plt.show()
 plt.plot(raw_data['Revenue'])
-plt.show()
+'''
+
+'''
 true_val = np.array(test['Revenue'])
 n = true_val.shape[0]
 pred = pred[0:n]
 mse = (pred - true_val)**2
 print(np.sum(mse)/n)
-
+'''
 
 '''
 #cont_x = np.arange(0, 200)
