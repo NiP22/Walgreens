@@ -35,7 +35,7 @@ def preprocessing(pred, df):
         df = df.sort_values(['Year', "Date"])
         if df.shape[0] < 15:
             f = open("seasonal.txt", 'a')
-            f.write(df['PLN_LABEL'].iloc[0] + "|")
+            f.write(df['PLN'].iloc[0] + "\n")
     else:
         df = df.drop('SEG', 1)
         tmp = df[['WEEK', 'PROMO']].groupby('WEEK')[['PROMO']].sum()
@@ -47,3 +47,13 @@ def preprocessing(pred, df):
         df = df.drop('PROMO', 1)
         df = df.drop_duplicates()
     return df
+
+
+def delete_predicted(data):
+    predicted = pd.read_csv('delete.csv', sep='|')
+    predicted = predicted[['PLN']]
+    predicted = predicted.drop_duplicates()
+    for pln in predicted['PLN']:
+        data = data[data['PLN'] != pln]
+        print(pln)
+    return data

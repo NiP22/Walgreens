@@ -19,7 +19,10 @@ raw_data.to_csv('test.csv', sep='|')
 '''
 
 def fill_promo(data):
-    range = np.sqrt(np.array(data[data['Promo'] == 0]).max() - np.array(data[data['Promo'] == 0]).min())
+    if not data[data['Promo'] == 0].empty:
+        range = np.sqrt(np.array(data[data['Promo'] == 0]).max() - np.array(data[data['Promo'] == 0]).min())
+    else:
+        return data
     indexes = data[data['Promo'] == 1].index
     for i in indexes:
         i_left = i - 1
@@ -62,6 +65,8 @@ def promo_coefficient(data, raw_data):
 
 
 def predict_52(raw_data, promo, weeks_to_predict=52):
+    if raw_data[raw_data['Year'] == 15].empty:
+        return np.array([])
     data = fill_promo(raw_data.copy())
     y_train = np.array(data['Revenue'])
     pred = model(y_train, weeks_to_predict)
@@ -70,6 +75,7 @@ def predict_52(raw_data, promo, weeks_to_predict=52):
         if promo[i]:
             pred[i] += coef
     return pred
+
 
 '''
 pred = predict_52(raw_data, np.array(test['Promo']))
