@@ -31,8 +31,7 @@ for pln in all_pln['PLN']:
     #future.to_csv('test_future.csv', sep='|')
     pred_item = preprocessing(1, pred_item)
     item = preprocessing(0, item)
-    item = item[['Revenue', 'Promo', 'Year', 'Date']]
-    test = pred_item.drop('PLN', 1)
+    item = item[['PLN', 'Revenue', 'Promo', 'Year', 'Date']]
     item.index = np.arange(0, item.shape[0])
     if not pred_item.empty:
         prediction = predict_52(item, np.array(pred_item['Promo']), pred_item.shape[0] - 1)
@@ -40,6 +39,10 @@ for pln in all_pln['PLN']:
             pred_item['ACTUAL'] = prediction
             pred_item.index = pred_item['WEEK']
             pred_item = pred_item.drop('WEEK', 1)
+            #plt.plot(np.array(item['Revenue']))
+            #plt.plot(np.arange(item['Revenue'].shape[0] - 1, item['Revenue'].shape[0] + prediction.size - 1),
+            #         prediction, color='blue')
+            #plt.show()
             with open('test.csv', 'a') as f:
                 pred_item[['PLN', "ACTUAL"]].to_csv(f, sep='|', header=False)
             f.close()

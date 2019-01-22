@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from statsmodels.tsa.ar_model import AR
+from  statsmodels.tools.sm_exceptions import MissingDataError
 import random
 
 plt.style.use('ggplot')
@@ -18,10 +19,9 @@ test.drop('PLN', 1)
 raw_data.to_csv('test.csv', sep='|')
 '''
 
+
 def fill_promo(data):
-    if not data[data['Promo'] == 0].empty:
-        range = np.sqrt(np.array(data[data['Promo'] == 0]).max() - np.array(data[data['Promo'] == 0]).min())
-    else:
+    if data[data['Promo'] == 0].empty:
         return data
     indexes = data[data['Promo'] == 1].index
     for i in indexes:
@@ -45,8 +45,19 @@ def fill_promo(data):
 
 def model(y_train, weeks_to_predict=52):
     ar_model = AR(y_train)
-    model_fit = ar_model.fit()
-    predictions = model_fit.predict(start=len(y_train), end=len(y_train) + weeks_to_predict, dynamic=False)
+    model_fit = ar_model.fit(maxlag=30, maxiter=100)
+    predictions = model_fit.predict(start=len(y_train), end=len(y_train) + weeks_to_predict, dynamic=True)
+    for actual in predictions:
+        if actual < 0:
+            print("it's log time")
+            try:
+                ar_model = AR(np.log(y_train))
+                model_fit = ar_model.fit(maxlag=15, maxiter=100)
+                predictions = model_fit.predict(start=len(y_train), end=len(y_train) + weeks_to_predict, dynamic=True)
+                return np.exp(predictions)
+            except MissingDataError:
+                print("baaad model")
+                return predictions
     return predictions
 
 
@@ -55,25 +66,28 @@ def promo_coefficient(data, raw_data):
     sum_true = 1
     tmp = 0
     y_pred = np.array(data['Revenue'])
-    y_true = raw_data['Revenue']
+    y_true = np.array(raw_data['Revenue'])
     indexes = raw_data[raw_data['Promo'] == 1].index
     for i in indexes:
-        tmp += (y_true[i] - y_pred[i])
         sum_pred += y_pred[i]
         sum_true += y_true[i]
-    return tmp/(indexes.shape[0] + 0.0001)/2
+    return sum_true/sum_pred
 
 
 def predict_52(raw_data, promo, weeks_to_predict=52):
     if raw_data[raw_data['Year'] == 15].empty:
+        print("history starts not from 15")
         return np.array([])
     data = fill_promo(raw_data.copy())
     y_train = np.array(data['Revenue'])
     pred = model(y_train, weeks_to_predict)
     coef = promo_coefficient(data, raw_data)
+    if coef > 4:
+        f = open("promo_dependent.txt", 'a')
+        f.write(str(raw_data['PLN'].iloc[0]) + "\n")
     for i in range(promo.shape[0]):
         if promo[i]:
-            pred[i] += coef
+            pred[i] *= coef
     return pred
 
 

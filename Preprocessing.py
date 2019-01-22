@@ -33,9 +33,9 @@ def preprocessing(pred, df):
         df = df.drop('BU', 1)
         df = df.drop_duplicates()
         df = df.sort_values(['Year', "Date"])
-        if df.shape[0] < 15:
+        if df.shape[0] < 15 and df.shape[0] > 0:
             f = open("seasonal.txt", 'a')
-            f.write(df['PLN'].iloc[0] + "\n")
+            f.write(str(df['PLN'].iloc[0]) + "\n")
     else:
         df = df.drop('SEG', 1)
         tmp = df[['WEEK', 'PROMO']].groupby('WEEK')[['PROMO']].sum()
@@ -46,6 +46,7 @@ def preprocessing(pred, df):
         df['Date'] = df['WEEK'].apply(lambda x: int(str(x)[3:5] + str(x)[5:7]))
         df = df.drop('PROMO', 1)
         df = df.drop_duplicates()
+        df = df.sort_values(['Year', "Date"])
     return df
 
 
