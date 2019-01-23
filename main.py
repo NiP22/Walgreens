@@ -39,10 +39,11 @@ for pln in all_pln['PLN']:
             pred_item['ACTUAL'] = prediction
             pred_item.index = pred_item['WEEK']
             pred_item = pred_item.drop('WEEK', 1)
-            #plt.plot(np.array(item['Revenue']))
-            #plt.plot(np.arange(item['Revenue'].shape[0] - 1, item['Revenue'].shape[0] + prediction.size - 1),
-            #         prediction, color='blue')
-            #plt.show()
+            plt.plot(np.array(item['Revenue']))
+            plt.plot(np.arange(item['Revenue'].shape[0] - 1, item['Revenue'].shape[0] + prediction.size - 1),
+                     prediction, color='blue')
+            plt.savefig('plots/plot' + str(pln) + ".png")
+            plt.close()
             with open('test.csv', 'a') as f:
                 pred_item[['PLN', "ACTUAL"]].to_csv(f, sep='|', header=False)
             f.close()

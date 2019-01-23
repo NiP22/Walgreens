@@ -18,6 +18,11 @@ test.drop('Unnamed: 0', 1)
 test.drop('PLN', 1)
 raw_data.to_csv('test.csv', sep='|')
 '''
+def delete_less_then_one(arr):
+    for i in range(arr.size):
+        if arr[i] < 1:
+            arr[i] = 1
+    return arr
 
 
 def fill_promo(data):
@@ -43,20 +48,26 @@ def fill_promo(data):
     return data
 
 
-def model(y_train, weeks_to_predict=52):
+def model(y_train, pln, weeks_to_predict=52):
     ar_model = AR(y_train)
-    model_fit = ar_model.fit(maxlag=30, maxiter=100)
-    predictions = model_fit.predict(start=len(y_train), end=len(y_train) + weeks_to_predict, dynamic=True)
+    try:
+        model_fit = ar_model.fit(maxlag=30, maxiter=100)
+        predictions = model_fit.predict(start=len(y_train), end=len(y_train) + weeks_to_predict, dynamic=True)
+    except ValueError:
+        f = open("spliced_data.txt", 'a')
+        f.write(str(pln) + "\n")
+        return np.array([])
     for actual in predictions:
         if actual < 0:
-            print("it's log time")
             try:
-                ar_model = AR(np.log(y_train))
-                model_fit = ar_model.fit(maxlag=15, maxiter=100)
+                print("it's log time")
+                ar_model = AR(np.log(delete_less_then_one(y_train)))
+                model_fit = ar_model.fit(maxlag=18, maxiter=100)
                 predictions = model_fit.predict(start=len(y_train), end=len(y_train) + weeks_to_predict, dynamic=True)
                 return np.exp(predictions)
             except MissingDataError:
-                print("baaad model")
+                f = open("bad_model.txt", 'a')
+                f.write(str(pln) + "\n")
                 return predictions
     return predictions
 
@@ -64,7 +75,6 @@ def model(y_train, weeks_to_predict=52):
 def promo_coefficient(data, raw_data):
     sum_pred = 1
     sum_true = 1
-    tmp = 0
     y_pred = np.array(data['Revenue'])
     y_true = np.array(raw_data['Revenue'])
     indexes = raw_data[raw_data['Promo'] == 1].index
@@ -80,7 +90,7 @@ def predict_52(raw_data, promo, weeks_to_predict=52):
         return np.array([])
     data = fill_promo(raw_data.copy())
     y_train = np.array(data['Revenue'])
-    pred = model(y_train, weeks_to_predict)
+    pred = model(y_train, raw_data['PLN'].iloc[0],  weeks_to_predict)
     coef = promo_coefficient(data, raw_data)
     if coef > 4:
         f = open("promo_dependent.txt", 'a')
